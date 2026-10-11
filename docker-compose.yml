@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  kucoin-scanner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kucoin-triangular-arbitrage
+    environment:
+      APP_ENV: prod
+      LOG_LEVEL: INFO
+      DB_PATH: /data/kucoin_bot.sqlite
+      CSV_EXPORT_DIR: /data/reports
+      KUCOIN_REST_BASE: https://api.kucoin.com
+      KUCOIN_PUSH_BASE: wss://x-push-spot.kucoin.com
+      DASHBOARD_HOST: 0.0.0.0
+      DASHBOARD_PORT: 8000
+    volumes:
+      - ./data:/data
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - arbitrage-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  arbitrage-network:
+    driver: bridge
